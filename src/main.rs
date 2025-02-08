@@ -4,7 +4,6 @@ use std::thread;
 use std::time::{Duration, Instant};
 use std::cmp::Ordering;
 
-// Helper struct for the expiration queue
 #[derive(Eq, PartialEq)]
 struct ExpirationEntry {
     expiration: Instant,
@@ -13,7 +12,6 @@ struct ExpirationEntry {
 
 impl Ord for ExpirationEntry {
     fn cmp(&self, other: &Self) -> Ordering {
-        // Reverse ordering to make BinaryHeap a min-heap
         other.expiration.cmp(&self.expiration)
     }
 }
@@ -37,7 +35,6 @@ impl Cache {
             expiration_queue: Arc::new(Mutex::new(BinaryHeap::new())),
         };
 
-        // Start background cleanup thread
         let cleanup_cache = cache.clone();
         thread::spawn(move || {
             loop {
@@ -52,7 +49,6 @@ impl Cache {
     fn set(&self, key: String, value: String, ttl: Option<Duration>) {
         let expiration = ttl.map(|duration| Instant::now() + duration);
         
-        // Add to expiration queue if TTL is set
         if let Some(exp) = expiration {
             let mut queue = self.expiration_queue.lock().unwrap();
             queue.push(ExpirationEntry {
@@ -85,53 +81,59 @@ impl Cache {
 
     fn incr(&self, key: &str) -> Result<i64, String> {
         let mut data = self.data.lock().unwrap();
-        match data.get(key) {
-            Some((value, expiration)) => {
-                if let Some(exp) = expiration {
-                    if Instant::now() > *exp {
-                        data.remove(key);
-                        return Err("Key expired".to_string());
-                    }
-                }
-                match value.parse::<i64>() {
-                    Ok(num) => {
-                        let new_value = num + 1;
-                        data.insert(key.to_string(), (new_value.to_string(), *expiration));
-                        Ok(new_value)
-                    }
-                    Err(_) => Err("Value is not an integer".to_string()),
+        let result = if let Some((value, expiration)) = data.get(key).cloned() {
+            if let Some(exp) = expiration {
+                if Instant::now() > exp {
+                    data.remove(key);
+                    return Err("Key expired".to_string());
                 }
             }
-            None => {
-                data.insert(key.to_string(), ("1".to_string(), None));
-                Ok(1)
+            match value.parse::<i64>() {
+                Ok(num) => {
+                    let new_value = num + 1;
+                    Ok(new_value)
+                }
+                Err(_) => Err("Value is not an integer".to_string()),
             }
+        } else {
+            Ok(1)
+        };
+
+        match result {
+            Ok(new_value) => {
+                data.insert(key.to_string(), (new_value.to_string(), None));
+                Ok(new_value)
+            }
+            Err(e) => Err(e),
         }
     }
 
     fn decr(&self, key: &str) -> Result<i64, String> {
         let mut data = self.data.lock().unwrap();
-        match data.get(key) {
-            Some((value, expiration)) => {
-                if let Some(exp) = expiration {
-                    if Instant::now() > *exp {
-                        data.remove(key);
-                        return Err("Key expired".to_string());
-                    }
-                }
-                match value.parse::<i64>() {
-                    Ok(num) => {
-                        let new_value = num - 1;
-                        data.insert(key.to_string(), (new_value.to_string(), *expiration));
-                        Ok(new_value)
-                    }
-                    Err(_) => Err("Value is not an integer".to_string()),
+        let result = if let Some((value, expiration)) = data.get(key).cloned() {
+            if let Some(exp) = expiration {
+                if Instant::now() > exp {
+                    data.remove(key);
+                    return Err("Key expired".to_string());
                 }
             }
-            None => {
-                data.insert(key.to_string(), ("-1".to_string(), None));
-                Ok(-1)
+            match value.parse::<i64>() {
+                Ok(num) => {
+                    let new_value = num - 1;
+                    Ok(new_value)
+                }
+                Err(_) => Err("Value is not an integer".to_string()),
             }
+        } else {
+            Ok(-1)
+        };
+
+        match result {
+            Ok(new_value) => {
+                data.insert(key.to_string(), (new_value.to_string(), None));
+                Ok(new_value)
+            }
+            Err(e) => Err(e),
         }
     }
 
@@ -140,20 +142,19 @@ impl Cache {
         let mut data = self.data.lock().unwrap();
         let now = Instant::now();
 
+        let mut expired_keys = Vec::new();
         while let Some(entry) = queue.peek() {
             if entry.expiration > now {
                 break;
             }
             
-            // Remove expired entry
+            expired_keys.push(entry.key.clone());
             queue.pop();
-            data.remove(&entry.key);
         }
-    }
 
-    fn remove(&self, key: &str) -> Option<String> {
-        let mut data = self.data.lock().unwrap();
-        data.remove(key).map(|(value, _)| value)
+        for key in expired_keys {
+            data.remove(&key);
+        }
     }
 
     fn clear(&self) {
@@ -167,7 +168,6 @@ impl Cache {
 fn main() {
     let cache = Cache::new();
 
-    // Test Redis-like commands
     cache.set("counter".to_string(), "5".to_string(), None);
     
     match cache.incr("counter") {
@@ -182,7 +182,6 @@ fn main() {
 
     println!("Counter exists: {}", cache.exists("counter"));
 
-    // Test TTL functionality
     cache.set("temp_key".to_string(), "temporary".to_string(), Some(Duration::from_secs(2)));
     println!("temp_key exists: {}", cache.exists("temp_key"));
     
