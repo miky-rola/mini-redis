@@ -1,4 +1,4 @@
-# Mini-Redis Implementation
+# Mini-Redis
 
 A lightweight, thread-safe in-memory cache system implemented in Rust, inspired by Redis. This implementation provides a subset of Redis-like functionality with a focus on simplicity and performance.
 
