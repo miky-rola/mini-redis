@@ -97,7 +97,6 @@ impl Cache {
         }
     }
 
-    /// Gets cache statistics
     pub fn get_stats(&self) -> Result<CacheStats, CacheError> {
         self.stats.read()
             .map_err(|_| CacheError::LockError)
