@@ -18,7 +18,6 @@ pub struct Cache {
 }
 
 impl Cache {
-    /// Creates a new Cache instance with the specified configuration
     pub fn new(config: CacheConfig) -> Self {
         let cache = Cache {
             data: Arc::new(RwLock::new(HashMap::new())),
@@ -55,7 +54,7 @@ impl Cache {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
 
-        // Handle max size eviction if needed
+        // handle max size eviction if needed
         if let Some(max_size) = self.config.max_size {
             if data.len() >= max_size.get() && !data.contains_key(&key) {
                 self.evict_entry(&mut data)?;
@@ -72,7 +71,6 @@ impl Cache {
         Ok(())
     }
 
-    /// Gets a value from the cache
     pub fn get(&self, key: &str) -> Result<Option<String>, CacheError> {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
@@ -145,7 +143,6 @@ impl Cache {
         }
     }
 
-    /// Removes expired entries and updates statistics
     fn cleanup_expired(&self) {
         if let Ok(mut queue) = self.expiration_queue.lock() {
             if let Ok(mut data) = self.data.write() {
@@ -172,7 +169,6 @@ impl Cache {
         }
     }
 
-    /// Evicts the least recently used entry
     fn evict_entry(&self, data: &mut HashMap<String, CacheEntry>) -> Result<(), CacheError> {
         if let Some((key_to_remove, _)) = data.iter()
             .min_by_key(|(_, entry)| (entry.last_accessed, entry.access_count)) {
