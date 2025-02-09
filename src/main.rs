@@ -1,7 +1,7 @@
 use std::num::NonZeroUsize;
 use std::thread;
 use std::time::Duration;
-use redis::{Cache, CacheConfig}; 
+use mini_redis::{Cache, CacheConfig}; 
 
 fn main() {
    
