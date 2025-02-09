@@ -11,15 +11,15 @@ pub struct CacheStats {
 impl CacheStats {
     
     pub fn hits(&self) -> u64 {
-        self.hits /// this here returns the number of cache hits
+        self.hits  // / this here returns the number of cache hits
     }
 
     pub fn misses(&self) -> u64 {
-        self.misses /// this here returns the number of cache misses
+        self.misses // / this here returns the number of cache misses
     }
 
     pub fn evictions(&self) -> u64 {
-        self.evictions /// this here returns the number of evicted entries
+        self.evictions // / this here returns the number of evicted entries
     }
 
     pub fn hit_rate(&self) -> f64 {
@@ -27,7 +27,7 @@ impl CacheStats {
         if total == 0 {
             0.0
         } else {
-            (self.hits as f64 / total as f64) * 100.0 /// this here returns the hit rate as a percentage
+            (self.hits as f64 / total as f64) * 100.0 // / this here returns the hit rate as a percentage
         }
     }
 }
