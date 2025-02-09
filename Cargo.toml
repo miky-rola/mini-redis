@@ -3,4 +3,10 @@ name = "redis"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
+[lib]
+name = "redis"
+path = "src/lib.rs"
+
+[[bin]]
+name = "redis"
+path = "src/main.rs"

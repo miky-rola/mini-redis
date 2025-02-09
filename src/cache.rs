@@ -8,7 +8,7 @@ use crate::error::CacheError;
 use crate::stats::CacheStats;
 use crate::types::{CacheEntry, ExpirationEntry};
 
-/// A thread-safe in-memory cache with advanced features
+
 #[derive(Clone)]
 pub struct Cache {
     data: Arc<RwLock<HashMap<String, CacheEntry>>>,
@@ -201,12 +201,12 @@ impl Cache {
     pub fn bulk_get<I, T>(&self, keys: I) -> Result<HashMap<T, Option<String>>, CacheError>
     where
         I: IntoIterator<Item = T>,
-        T: Into<String> + Clone,
+        T: Into<String> + Clone + std::hash::Hash + Eq,
     {
         let mut results = HashMap::new();
         for key in keys {
             results.insert(key.clone(), self.get(&key.into())?);
         }
         Ok(results)
-    }
+}
 }
