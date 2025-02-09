@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion:: Criterion;
 use std::time::Duration;
 use advanced_cache::{Cache, CacheConfig};
 
