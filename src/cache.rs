@@ -182,7 +182,6 @@ impl Cache {
         Ok(())
     }
 
-    /// Bulk set operation
     pub fn bulk_set<I>(&self, items: I) -> Result<(), CacheError>
     where
         I: IntoIterator<Item = (String, String)>,
