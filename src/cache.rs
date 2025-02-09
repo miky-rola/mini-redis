@@ -54,7 +54,6 @@ impl Cache {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
 
-        // handle max size eviction if needed
         if let Some(max_size) = self.config.max_size {
             if data.len() >= max_size.get() && !data.contains_key(&key) {
                 self.evict_entry(&mut data)?;
