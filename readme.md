@@ -25,7 +25,7 @@ mini_redis = "0.1.0"
 Basic usage example:
 
 ```rust
-use advanced_cache::{Cache, CacheConfig};
+use mini_redis::{Cache, CacheConfig};
 use std::time::Duration;
 
 fn main() {
@@ -46,7 +46,7 @@ fn main() {
 }
 ```
 
-## Advanced Features
+## Features
 
 ### Bulk Operations
 
