@@ -1,13 +1,13 @@
 use std::collections::{BinaryHeap, HashMap};
 use std::sync::{Arc, Mutex, RwLock};
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::config::CacheConfig;
 use crate::error::CacheError;
 use crate::stats::CacheStats;
 use crate::types::{CacheEntry, ExpirationEntry};
-
 
 #[derive(Clone)]
 pub struct Cache {
@@ -15,24 +15,36 @@ pub struct Cache {
     expiration_queue: Arc<Mutex<BinaryHeap<ExpirationEntry>>>,
     stats: Arc<RwLock<CacheStats>>,
     config: CacheConfig,
+    running: Arc<AtomicBool>,
+    cleanup_thread: Arc<Mutex<Option<JoinHandle<()>>>>,
 }
 
 impl Cache {
     pub fn new(config: CacheConfig) -> Self {
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = running.clone();
+        
         let cache = Cache {
             data: Arc::new(RwLock::new(HashMap::new())),
             expiration_queue: Arc::new(Mutex::new(BinaryHeap::new())),
             stats: Arc::new(RwLock::new(CacheStats::default())),
             config,
+            running,
+            cleanup_thread: Arc::new(Mutex::new(None)),
         };
 
         let cleanup_cache = cache.clone();
-        thread::spawn(move || {
-            loop {
+        let handle = thread::spawn(move || {
+            while running_clone.load(Ordering::Relaxed) {
                 cleanup_cache.cleanup_expired();
                 thread::sleep(cleanup_cache.config.cleanup_interval);
             }
         });
+
+        // store the thread handle
+        if let Ok(mut cleanup_thread) = cache.cleanup_thread.lock() {
+            *cleanup_thread = Some(handle);
+        }
 
         cache
     }
@@ -102,7 +114,7 @@ impl Cache {
             .map(|stats| stats.clone())
     }
 
-    /// Updates the TTL for an existing key
+    /// updates the TTL for an existing key
     pub fn update_ttl(&self, key: &str, ttl: Duration) -> Result<bool, CacheError> {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
@@ -124,7 +136,7 @@ impl Cache {
         }
     }
 
-    /// Performs atomic compare and swap operation
+    /// performs atomic compare and swap operation
     pub fn compare_and_swap(&self, key: &str, expected: &str, new_value: String) -> Result<bool, CacheError> {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
@@ -201,5 +213,18 @@ impl Cache {
             results.insert(key.clone(), self.get(&key.into())?);
         }
         Ok(results)
+    }
 }
+
+impl Drop for Cache {
+    fn drop(&mut self) {
+        self.running.store(false, Ordering::Relaxed);
+        
+        // take ownership of the thread handle and wait for it to finish
+        if let Ok(mut cleanup_thread) = self.cleanup_thread.lock() {
+            if let Some(handle) = cleanup_thread.take() {
+                let _ = handle.join();
+            }
+        }
+    }
 }
