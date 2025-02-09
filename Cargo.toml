@@ -2,7 +2,7 @@
 name = "mini-redis"
 version = "0.1.0"
 edition = "2021"
-
+description = "A lightweight, thread-safe in-memory cache system implemented in Rust, inspired by Redis"
 
 [lib]
 name = "mini_redis"
