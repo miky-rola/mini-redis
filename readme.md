@@ -1,6 +1,7 @@
 # Mini-Redis
 
-A lightweight, thread-safe in-memory cache system implemented in Rust, inspired by Redis. This implementation provides a subset of Redis-like functionality with a focus on simplicity and performance.
+A lightweight, thread-safe in-memory cache system implemented in Rust, inspired by Redis. This implementation provides a subset of Redis-like functionality with a focus on simplicity and performance. It's designed to be a lightweight, in-memory cache suitable for small to medium-sized applications that need Redis-like functionality without the full Redis deployment.
+
 
 ## Features
 
@@ -111,7 +112,7 @@ The cache is designed with performance in mind:
 
 ## Inspiration
 
-This project takes inspiration from the Redis source code but implements a minimal subset of features. It's designed to be a lightweight, in-memory cache suitable for small to medium-sized applications that need Redis-like functionality without the full Redis deployment.
+This project takes inspiration from the Redis source code but implements a minimal subset of the features. It's designed to be a lightweight, in-memory cache suitable for small to medium-sized applications that need Redis-like functionality without the full Redis deployment.
 
 
 ## Contributing
@@ -119,9 +120,6 @@ This project takes inspiration from the Redis source code but implements a minim
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 
-## Acknowledgments
-
-- Redis project for inspiration
 
 ## Author
 
