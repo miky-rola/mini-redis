@@ -19,7 +19,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mini redis = "0.1.0"
+mini_redis = "0.1.0"
 ```
 
 Basic usage example:
@@ -125,4 +125,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
-[Your Name]
+miky-rola  mikyrola8@gmail.com
