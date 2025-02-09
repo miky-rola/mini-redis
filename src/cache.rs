@@ -125,7 +125,7 @@ impl Cache {
         }
     }
 
-    /// Performs atomic compare-and-swap operation
+    /// Performs atomic compare and swap operation
     pub fn compare_and_swap(&self, key: &str, expected: &str, new_value: String) -> Result<bool, CacheError> {
         let mut data = self.data.write()
             .map_err(|_| CacheError::LockError)?;
