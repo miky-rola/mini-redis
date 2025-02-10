@@ -41,7 +41,6 @@ impl Cache {
             }
         });
 
-        // store the thread handle
         if let Ok(mut cleanup_thread) = cache.cleanup_thread.lock() {
             *cleanup_thread = Some(handle);
         }
