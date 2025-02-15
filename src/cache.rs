@@ -149,7 +149,7 @@ impl Drop for Cache {
     }
 }
 
-fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running: Arc<AtomicBool>) {
+fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running: Arc<AtomicBool>)-> Result<(), Box<dyn std::error::Error>>{
     let mut data = HashMap::new();
     let mut expiration_queue = BinaryHeap::new();
     let mut stats = CacheStats::default();
@@ -207,6 +207,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
                 },
                 CacheCommand::Shutdown => return,
             }
+    
         }
         
         // Check if it's time to clean up expired entries
@@ -219,6 +220,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
         // Small sleep to prevent busy-waiting
         thread::sleep(Duration::from_millis(1));
     }
+    Ok(())
 }
 
 fn handle_set(
