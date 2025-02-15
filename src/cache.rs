@@ -216,7 +216,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
             last_cleanup = now;
         }
         
-        // Small sleep to prevent busy-waiting
+        // small sleep to prevent busy-waiting
         thread::sleep(Duration::from_millis(1));
     }
     Ok(())
