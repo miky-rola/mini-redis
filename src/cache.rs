@@ -81,12 +81,12 @@ impl Cache {
         I: IntoIterator<Item = T>,
         T: Into<String> + Clone + std::hash::Hash + Eq,
     {
-        let keys_vec: Vec<String> = keys.into_iter().map(|k| k.into()).collect();
-        let keys_clone: Vec<T> = keys.into_iter().collect();
+        let keys_vec: Vec<T> = keys.into_iter().collect();
+        let keys_string: Vec<String> = keys_vec.iter().map(|k| k.clone().into()).collect();
         
         let (resp_sender, resp_receiver) = mpsc::channel();
         self.sender.send(CacheCommand::BulkGet { 
-            keys: keys_vec, 
+            keys: keys_string, 
             resp: resp_sender,
         })
         .map_err(|_| CacheError::LockError)?;
@@ -96,9 +96,9 @@ impl Cache {
         // Convert the result back to the original key type
         let mut converted_result = HashMap::new();
         if let Ok(string_result) = result {
-            for (i, key) in keys_clone.iter().enumerate() {
+            for key in keys_vec {
                 let string_key = key.clone().into();
-                converted_result.insert(key.clone(), string_result.get(&string_key).cloned().flatten());
+                converted_result.insert(key, string_result.get(&string_key).cloned().flatten());
             }
         }
         
@@ -210,7 +210,6 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
     
         }
         
-        // Check if it's time to clean up expired entries
         let now = Instant::now();
         if now.duration_since(last_cleanup) >= config.cleanup_interval {
             cleanup_expired(&mut data, &mut expiration_queue, &mut stats);
