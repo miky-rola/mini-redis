@@ -161,7 +161,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
         // Process any pending commands
         while let Ok(cmd) = receiver.try_recv() {
             match cmd {
-                CacheCommand::Shutdown => return,
+                CacheCommand::Shutdown => return Ok(()),
                 cmd => command_queue.push_back(cmd),
             }
         }
@@ -205,7 +205,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
                     let result = handle_cas(&mut data, &key, &expected, new_value);
                     let _ = resp.send(result);
                 },
-                CacheCommand::Shutdown => return,
+                CacheCommand::Shutdown => return Ok(()),
             }
     
         }
