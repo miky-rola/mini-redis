@@ -217,7 +217,7 @@ fn run_event_loop(receiver: Receiver<CacheCommand>, config: CacheConfig, running
         }
         
         // small sleep to prevent busy-waiting
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(1));   
     }
     Ok(())
 }
