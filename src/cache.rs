@@ -35,7 +35,7 @@ impl Cache {
         let running_clone = running.clone();
         
         let handle = thread::spawn(move || {
-            run_event_loop(receiver, config, running_clone);
+            let _ = run_event_loop(receiver, config, running_clone);
         });
         
         Cache {
