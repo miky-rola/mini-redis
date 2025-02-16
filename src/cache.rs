@@ -93,10 +93,10 @@ impl Cache {
         
         let result = resp_receiver.recv().map_err(|_| CacheError::LockError)?;
         
-        // Convert the result back to the original key type
+        
         let mut converted_result = HashMap::new();
         if let Ok(string_result) = result {
-            for key in keys_vec {
+            for key in keys_vec { // / Convert the result back to the original key type
                 let string_key = key.clone().into();
                 converted_result.insert(key, string_result.get(&string_key).cloned().flatten());
             }
