@@ -2,6 +2,7 @@ use criterion:: Criterion;
 use std::time::Duration;
 use advanced_cache::{Cache, CacheConfig};
 
+
 fn cache_benchmark(c: &mut Criterion) {
     let config = CacheConfig::default();
     let cache = Cache::new(config);
